@@ -1,6 +1,9 @@
+import os.path
 from abc import abstractmethod
 
 import pandas as pd
+import wget
+import validators
 
 
 class BaseModel:
@@ -27,3 +30,22 @@ class BaseModel:
         :param data_input: DataFrame with input data
         :return: DataFrame of preprocessed input data
         """
+
+    @classmethod
+    def download(cls, url: str, download_path: str = "/tmp") -> str:
+        """
+        Generic method to download a file from url. This method can be used for download model from S3, and after tha
+        load the model to memory
+        :param url: URL of downloadable file
+        :param download_path: Path to store the file
+        :return: Local destination path of the file
+        """
+        if not validators.url(url):
+            raise Exception(f"{url} is not a valid url")
+        if not os.path.exists(download_path):
+            os.makedirs(download_path)
+        filename = url.split("/")[-1]
+        destination = os.path.join(download_path, filename)
+        if not os.path.exists(destination):
+            wget.download(url, destination)
+        return destination
